@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
@@ -86,9 +85,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 connectTask.start();
                 break;
             case R.id.captureBtn:
-//                openCamera();
-                openFrontCamera();
+                openCamera();
                 sendFrames();
+//                sendCameraCapture();
                 break;
             default: break;
         }
@@ -121,72 +120,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-//    private void openCamera() {
-//        CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
-//        try {
-//            String cameraId = cameraManager.getCameraIdList()[0];
-//            if (ActivityCompat.checkSelfPermission(this, permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(this, new String[]{ permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-//                return;
-//            }
-//            cameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
-//                @Override
-//                public void onOpened(@NonNull CameraDevice camera) {
-//                    cameraDevice = camera;
-//                    createCameraPreviewSession();
-//                }
-//
-//                @Override
-//                public void onDisconnected(@NonNull CameraDevice camera) {
-//                    camera.close();
-//                    cameraDevice = null;
-//                }
-//
-//                @Override
-//                public void onError(@NonNull CameraDevice camera, int error) {
-//                    camera.close();
-//                    cameraDevice = null;
-//                }
-//            }, null);
-//        } catch (CameraAccessException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    private void openFrontCamera() {
+    private void openCamera() {
         CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
         try {
-            String[] cameraIds = cameraManager.getCameraIdList();
-            for (String cameraId : cameraIds) {
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
-                Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    if (ActivityCompat.checkSelfPermission(this, permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, new String[]{ permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-                        return;
-                    }
-                    cameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
-                        @Override
-                        public void onOpened(@NonNull CameraDevice camera) {
-                            cameraDevice = camera;
-                            createCameraPreviewSession();
-                        }
-
-                        @Override
-                        public void onDisconnected(@NonNull CameraDevice camera) {
-                            camera.close();
-                            cameraDevice = null;
-                        }
-
-                        @Override
-                        public void onError(@NonNull CameraDevice camera, int error) {
-                            camera.close();
-                            cameraDevice = null;
-                        }
-                    }, null);
-                    break;
-                }
+            String cameraId = cameraManager.getCameraIdList()[0];
+            if (ActivityCompat.checkSelfPermission(this, permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{ permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+                return;
             }
+            cameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
+                @Override
+                public void onOpened(@NonNull CameraDevice camera) {
+                    cameraDevice = camera;
+                    createCameraPreviewSession();
+                }
+
+                @Override
+                public void onDisconnected(@NonNull CameraDevice camera) {
+                    camera.close();
+                    cameraDevice = null;
+                }
+
+                @Override
+                public void onError(@NonNull CameraDevice camera, int error) {
+                    camera.close();
+                    cameraDevice = null;
+                }
+            }, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -262,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
 
+                        // Continue sending frames
+//                        sendFrames();
                     }
                 };
 
