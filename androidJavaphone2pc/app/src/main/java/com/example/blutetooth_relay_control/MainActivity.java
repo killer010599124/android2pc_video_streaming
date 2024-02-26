@@ -52,9 +52,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-
-
-
     private EditText ipAddress;
     private Button connectButton, captureButton;
     private String currentKeyboard;
@@ -87,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.captureBtn:
                 openCamera();
                 sendFrames();
-//                sendCameraCapture();
                 break;
             default: break;
         }
@@ -222,8 +218,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
 
-                        // Continue sending frames
-//                        sendFrames();
                     }
                 };
 
@@ -233,35 +227,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
-    private void sendCameraCapture() {
-        if (cameraDevice != null) {
-            try {
-                CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-                captureRequestBuilder.addTarget(imageReader.getSurface());
-
-                CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
-                    @Override
-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                        super.onCaptureCompleted(session, request, result);
-                        Toast.makeText(MainActivity.this, "Image captured", Toast.LENGTH_SHORT).show();
-                    }
-                };
-
-                cameraCaptureSession.capture(captureRequestBuilder.build(), captureCallback, null);
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void sendCameraCapture(byte[] data) {
 
         String ip = ipAddress.getText().toString();
         SendImageThread sendImageTask = new SendImageThread(ip, data);
         sendImageTask.start();
     }
-
     private class SendImageThread extends Thread {
         private String ipAddress;
         private byte[] data;
@@ -293,7 +264,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
     private class ReceiveCommandThread extends Thread {
         private Socket socket;
         private PrintWriter out;
@@ -380,115 +350,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
     }
-
-
-    private class SendReceiveThread extends AsyncTask<byte[], String, Void> {
-        private String ipAddress;
-        private Socket socket;
-        private PrintWriter out;
-        private BufferedOutputStream bos;
-        private DataOutputStream dos;
-        private BufferedReader in;
-
-        public SendReceiveThread(String ipAddress) {
-            this.ipAddress = ipAddress;
-        }
-
-        @Override
-        protected Void doInBackground(byte[]... params) {
-            byte[] data = params[0];
-
-            try {
-                socket = new Socket(ipAddress, 12346);
-                out = new PrintWriter(socket.getOutputStream(), true);
-                bos = new BufferedOutputStream(socket.getOutputStream());
-                dos = new DataOutputStream(bos);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                // Send the image data size
-                int imageSize = data.length;
-                dos.writeInt(imageSize);
-//                // Send the image data
-                dos.write(data);
-                dos.flush();
-
-                bos.close();
-                dos.close();
-
-                socket.shutdownOutput();
-
-                // Receive and process incoming commands
-                String message;
-                while ((message = in.readLine()) != null) {
-                    publishProgress(message);
-                    out.println("Try");
-                    out.flush();
-                }
-
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if(bos != null){
-                    try {
-                        bos.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if(dos != null){
-                    try{
-                        dos.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if (out != null) {
-
-                    out.close();
-                }
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            String message = values[0];
-            colorFrame.setVisibility(View.VISIBLE);
-            if (message.equals("red")) {
-                colorFrame.setBackgroundColor(Color.parseColor("#ff0000"));
-            } else if (message.equals("green")) {
-                colorFrame.setBackgroundColor(Color.parseColor("#00ff00"));
-            } else if (message.equals("blue")) {
-                colorFrame.setBackgroundColor(Color.parseColor("#0000ff"));
-            } else if (message.equals("white")) {
-                colorFrame.setBackgroundColor(Color.parseColor("#ffffff"));
-            } else if (message.equals("black")) {
-                colorFrame.setBackgroundColor(Color.parseColor("#000000"));
-            }
-        }
-    }
-
-
     @Override
     protected void onPause() {
         closeCamera();
+        stopSendingFrames();
         super.onPause();
     }
 
@@ -505,80 +370,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imageReader.close();
             imageReader = null;
         }
-    }
-
-
-
-
-    private void receiveTextFromPC() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-
-                    String ip = ipAddress.getText().toString();
-                    SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString("IpAddress", ip);
-                    editor.apply();
-                    // Connect to the phone's IP address and port
-                    Socket socket = new Socket(ip, 12346);
-
-                    // Create input and output streams for sending and receiving data
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                    // Send the text content
-                    String textContent = "Hello, phone!";
-                    out.println(textContent);
-
-                    // Receive and process response from the server
-                    String response;
-                    while ((response = in.readLine()) != null) {
-                        showToast("textContent");
-                        // Print the response
-                        System.out.println("Response from server: " + response);
-                    }
-
-                    // Close the streams and socket
-                    out.close();
-                    in.close();
-                    socket.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    // Handle any exceptions that may occur
-                }
-            }
-        }).start(); }
-
-    private void sendTextToPC(final String text) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-
-                    showToast("1");
-
-                    String ip = ipAddress.getText().toString();
-                    SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString("IpAddress", ip);
-                    editor.apply();
-
-                    Socket socket = new Socket(ip, 12346);
-                    DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-                    byte[] data = text.getBytes(StandardCharsets.UTF_8);
-                    outputStream.write(data);
-                    outputStream.flush();
-                    outputStream.close();
-
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
      public void showToast(final String Text){
