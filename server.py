@@ -100,7 +100,7 @@ def start_server(host, port):
 
 def run_servers():
     # Set up server sockets
-    host = input("Enter IP address: ") #'192.168.130.145'  # your IP address or hostname
+    host = '192.168.144.101' # input("Enter IP address: ") #'192.168.130.145'  # your IP address or hostname
     port1 = 12346  # the same port number used in the Android app
     port2 = 12345
 
