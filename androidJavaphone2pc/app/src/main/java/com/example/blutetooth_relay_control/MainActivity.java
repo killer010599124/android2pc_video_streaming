@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 connectTask.start();
                 break;
             case R.id.captureBtn:
-//                openCamera();
                 openFrontCamera();
                 sendFrames();
                 break;
@@ -121,13 +120,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void openFrontCamera() {
         CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
         try {
-            String[] cameraIds = cameraManager.getCameraIdList();
-            for (String cameraId : cameraIds) {
+            String[] cameraIdList = cameraManager.getCameraIdList();
+            for (String cameraId : cameraIdList) {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
                 if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
                     if (ActivityCompat.checkSelfPermission(this, permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, new String[]{ permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+                        ActivityCompat.requestPermissions(this, new String[]{permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
                         return;
                     }
                     cameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
