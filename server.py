@@ -30,11 +30,12 @@ def capture_image(client_socket):
                 break
             image_data += chunk
         
+        
         # Convert the received image data to a NumPy array
         image_array = np.frombuffer(image_data, dtype=np.uint8)
-
+        
         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-
+        
         # Add the image array to the queue
         image_queue.put(image_array)
 
@@ -61,6 +62,10 @@ def display_images():
             # Decode the image array
             image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            print(image_rgb[0][0])
+            
+            
             # Display the image using OpenCV
             cv2.imshow("Received Image", image)
 

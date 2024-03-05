@@ -217,9 +217,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         // Change the color of the first pixel to red
                         mutableBitmap.setPixel(0, 0, displayColor);
 
+
+
                         // Convert the modified bitmap back to byte array
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                        mutableBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                         byte[] modifiedData = outputStream.toByteArray();
 
                         sendCameraCapture(modifiedData);
@@ -386,19 +388,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     colorFrame.setVisibility(View.VISIBLE);
                     if (message.equals("red")) {
                         colorFrame.setBackgroundColor(Color.parseColor("#ff0000"));
-                        displayColor = Color.rgb(255,0,0);
+                        displayColor = Color.argb(0xff,255,0,0);
                     } else if (message.equals("green")) {
                         colorFrame.setBackgroundColor(Color.parseColor("#00ff00"));
-                        displayColor = Color.rgb(0,255,0);
+                        displayColor = Color.argb(0xff,0,255,0);
                     } else if (message.equals("blue")) {
                         colorFrame.setBackgroundColor(Color.parseColor("#0000ff"));
-                        displayColor = Color.rgb(0,0,255);
+                        displayColor = Color.argb(0xff,0,0,255);
                     } else if (message.equals("white")) {
                         colorFrame.setBackgroundColor(Color.parseColor("#ffffff"));
-                        displayColor = Color.rgb(255,255,255);
+                        displayColor = Color.argb(0xff,255,255,255);
                     } else if (message.equals("black")) {
                         colorFrame.setBackgroundColor(Color.parseColor("#000000"));
-                        displayColor = Color.rgb(0,0,0);
+                        displayColor = Color.argb(0xff,0,0,0);
                     } else if (message.contains("arrow")) {
 
                         String pattern = "\\d+"; // Regular expression pattern to match one or more digits
