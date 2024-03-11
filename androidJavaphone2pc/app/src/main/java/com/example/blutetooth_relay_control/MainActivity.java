@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             camera.close();
                             cameraDevice = null;
                         }
-
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
                             camera.close();
@@ -203,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onImageAvailable(ImageReader reader) {
                     try {
                         Image image = reader.acquireLatestImage();
+
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] data = new byte[buffer.remaining()];
                         buffer.get(data);
@@ -210,6 +210,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // Convert byte array to bitmap
                         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+
 
                         // Create a mutable bitmap copy
                         Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
@@ -269,20 +271,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 captureRequestBuilder.addTarget(imageReader.getSurface());
-
                 CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
                     @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                         super.onCaptureCompleted(session, request, result);
                         Toast.makeText(MainActivity.this, "Image captured", Toast.LENGTH_SHORT).show();
-
                         // Delay before capturing the next frame
                         try {
                             Thread.sleep(1000 / frameRate);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-
                     }
                 };
 
